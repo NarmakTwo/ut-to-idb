@@ -17,7 +17,6 @@
     --success: #00ff6a;
     --error: #ff3333;
 
-    /* Fluid scale: clamp(min, preferred, max) */
     --fs-xl:   clamp(13px, 2.2vw, 22px);
     --fs-lg:   clamp(9px,  1.4vw, 14px);
     --fs-md:   clamp(8px,  1.1vw, 11px);
@@ -26,16 +25,13 @@
 
     --gap:     clamp(10px, 1.8vw, 20px);
     --pad:     clamp(16px, 3vw,   32px);
-    --radius:  0px;
     --shadow:  clamp(3px, 0.6vw, 6px);
     --border-w: clamp(2px, 0.25vw, 3px);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body {
-    height: 100%;
-  }
+  html, body { height: 100%; }
 
   body {
     background: var(--bg);
@@ -65,7 +61,6 @@
     z-index: 999;
   }
 
-  /* ── Layout wrapper ── */
   .wrap {
     width: 100%;
     max-width: clamp(300px, 65vw, 720px);
@@ -135,9 +130,7 @@
     transition: border-color 0.1s;
   }
 
-  .filename-row:focus-within {
-    border-color: var(--accent);
-  }
+  .filename-row:focus-within { border-color: var(--accent); }
 
   .filename-input {
     flex: 1;
@@ -161,32 +154,92 @@
     flex-shrink: 0;
   }
 
-  /* ── File slots ── */
-  .slots {
+  /* ── Drop zone ── */
+  .drop-zone {
+    width: 100%;
+    border: var(--border-w) dashed var(--border);
+    background: #050505;
+    padding: clamp(24px, 4vw, 44px) clamp(16px, 3vw, 32px);
     display: flex;
     flex-direction: column;
-    gap: clamp(6px, 1vw, 10px);
-  }
-
-  .slot {
-    display: grid;
-    grid-template-columns: 1fr auto;
     align-items: center;
-    gap: clamp(8px, 1.5vw, 14px);
-    padding: clamp(8px, 1.2vw, 13px) clamp(10px, 1.5vw, 14px);
-    border: 1px solid var(--border);
-    background: #050505;
+    justify-content: center;
+    gap: clamp(8px, 1.2vw, 14px);
     cursor: pointer;
     transition: border-color 0.1s, background 0.1s;
     position: relative;
-    overflow: hidden;
+    text-align: center;
   }
 
-  .slot:hover        { border-color: var(--accent); background: #0f0f0f; }
-  .slot.loaded       { border-color: var(--success); }
-  .slot.required-missing { border-color: var(--error); }
+  .drop-zone:hover,
+  .drop-zone.drag-over {
+    border-color: var(--yellow);
+    background: #0d0d00;
+  }
 
-  .slot.loaded::before {
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drop-icon {
+    font-size: clamp(20px, 3vw, 32px);
+    color: var(--dim);
+    transition: color 0.1s;
+    line-height: 1;
+  }
+
+  .drop-zone:hover .drop-icon,
+  .drop-zone.drag-over .drop-icon {
+    color: var(--yellow);
+  }
+
+  .drop-label {
+    font-size: var(--fs-sm);
+    color: var(--dim);
+    letter-spacing: 0.12em;
+    line-height: 1.8;
+  }
+
+  .drop-sub {
+    font-size: var(--fs-xs);
+    color: #444;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── File list ── */
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(5px, 0.8vw, 8px);
+    margin-top: var(--gap);
+  }
+
+  .file-list:empty { display: none; }
+
+  .file-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: clamp(8px, 1.5vw, 14px);
+    padding: clamp(8px, 1.2vw, 12px) clamp(10px, 1.5vw, 14px);
+    border: 1px solid var(--success);
+    background: #050505;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.12s steps(1) forwards;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .file-item::before {
     content: '';
     position: absolute;
     left: 0; top: 0; bottom: 0;
@@ -194,46 +247,64 @@
     background: var(--success);
   }
 
-  .slot-label {
+  .file-info { min-width: 0; }
+
+  .file-name {
     font-size: var(--fs-sm);
-    color: var(--text);
-    letter-spacing: 0.08em;
-  }
-
-  .slot-label .asterisk {
-    color: var(--yellow);
-    margin-left: 0.4em;
-  }
-
-  .slot-hint {
-    font-size: var(--fs-xs);
-    color: var(--dim);
-    letter-spacing: 0.05em;
-    margin-top: clamp(3px, 0.5vw, 6px);
-  }
-
-  .slot-status {
-    font-size: var(--fs-xs);
-    color: var(--dim);
+    color: var(--success);
+    letter-spacing: 0.07em;
     white-space: nowrap;
-    letter-spacing: 0.05em;
-    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .slot.loaded .slot-status { color: var(--success); }
-
-  .slot input[type="file"] { display: none; }
-
-  /* ── Legend ── */
-  .legend {
+  .file-size {
     font-size: var(--fs-xs);
     color: var(--dim);
-    letter-spacing: 0.06em;
-    margin-bottom: var(--gap);
-    padding-left: 2px;
+    letter-spacing: 0.05em;
+    margin-top: clamp(3px, 0.5vw, 5px);
   }
 
-  .legend .asterisk { color: var(--yellow); }
+  .file-checkmark {
+    font-size: var(--fs-sm);
+    color: var(--success);
+    white-space: nowrap;
+  }
+
+  /* ── Delete button ── */
+  .delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(10px, 1.6vw, 16px);
+    color: var(--yellow);
+    line-height: 1;
+    padding: 2px 4px;
+    transition: color 0.08s, transform 0.08s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .delete-btn:hover {
+    color: var(--error);
+    transform: scale(1.2);
+  }
+
+  .delete-btn:active {
+    transform: scale(0.9);
+  }
+
+  /* ── Empty state ── */
+  .empty-notice {
+    font-size: var(--fs-xs);
+    color: #333;
+    letter-spacing: 0.1em;
+    text-align: center;
+    padding: clamp(10px, 1.5vw, 16px) 0 clamp(4px, 0.6vw, 8px);
+  }
 
   /* ── Export button ── */
   .write-btn {
@@ -259,6 +330,47 @@
   .write-btn:active {
     box-shadow: 0 0 0 var(--yellow);
     transform: translate(var(--shadow), var(--shadow));
+  }
+
+  .write-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: var(--shadow) var(--shadow) 0 var(--yellow);
+  }
+
+  /* ── Count badge ── */
+  .file-count {
+    font-size: var(--fs-xs);
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    margin-bottom: var(--gap);
+    padding-bottom: clamp(8px, 1vw, 12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .file-count .count-num {
+    color: var(--success);
+  }
+
+  .clear-all-btn {
+    background: none;
+    border: 1px solid var(--border);
+    font-family: 'Press Start 2P', monospace;
+    font-size: var(--fs-xs);
+    color: var(--dim);
+    cursor: pointer;
+    padding: 4px 8px;
+    letter-spacing: 0.06em;
+    transition: border-color 0.1s, color 0.1s;
+  }
+
+  .clear-all-btn:hover {
+    border-color: var(--error);
+    color: var(--error);
   }
 
   /* ── Deco ── */
@@ -292,10 +404,9 @@
     border-color: var(--accent);
   }
 
-  /* ── Narrow mobile ── */
   @media (max-width: 400px) {
-    .slot { grid-template-columns: 1fr; }
-    .slot-status { text-align: left; margin-top: 4px; }
+    .file-item { grid-template-columns: 1fr auto; }
+    .file-checkmark { display: none; }
   }
 </style>
 </head>
@@ -317,15 +428,30 @@
     </div>
   </div>
 
-  <!-- Save slots -->
+  <!-- File importer -->
   <div class="card">
-    <div class="card-title">▶ UNDERTALE SAVE FILES</div>
-    <div class="slots" id="slots-container"></div>
+    <div class="card-title">▶ SAVE FILES</div>
+
+    <!-- Drop zone -->
+    <label class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" multiple />
+      <div class="drop-icon">▼</div>
+      <div class="drop-label">DROP FILES HERE<br>OR CLICK TO BROWSE</div>
+      <div class="drop-sub">any save files · multiple allowed</div>
+    </label>
+
+    <!-- File list -->
+    <div class="file-list" id="file-list"></div>
+    <div class="empty-notice" id="empty-notice">no files loaded yet</div>
   </div>
 
-  <div class="legend"><span class="asterisk">*</span> required &nbsp;·&nbsp; optional files written as empty if not provided</div>
+  <!-- File count + clear all -->
+  <div class="file-count" id="file-count-row" style="display:none;">
+    <span><span class="count-num" id="count-num">0</span> FILE(S) READY</span>
+    <button class="clear-all-btn" onclick="clearAll()">✕ CLEAR ALL</button>
+  </div>
 
-  <button class="write-btn" onclick="exportIDB()">★ EXPORT .IDB FILE ★</button>
+  <button class="write-btn" id="export-btn" onclick="exportIDB()" disabled>★ EXPORT .IDB FILE ★</button>
 
   <div class="deco">* * * * * * * *</div>
 
@@ -335,86 +461,112 @@
   </div>
 
 </div>
+
 <script>
 const DB_NAME    = '/_savedata';
 const DB_VERSION = 21;
 const STORE      = 'FILE_DATA';
 const KEY_PREFIX = '/_savedata/';
 
-const UT_FILES = [
-  { key: 'dr.ini', label: 'dr.ini', hint: 'game config',     required: true  },
-  { key: 'filech1_0',         label: 'filech1_0',          hint: 'ch1 slot 1',       required: false  },
-  { key: 'filech1_1',         label: 'filech1_1',          hint: 'ch1 slot 2',     required: false },
-  { key: 'filech1_2',         label: 'filech1_2',          hint: 'ch1 slot 3', required: false },
-
-  { key: 'filech2_0',         label: 'filech2_0',          hint: 'ch2 slot 1',       required: false  },
-  { key: 'filech2_1',         label: 'filech2_1',          hint: 'ch2 slot 2',     required: false },
-  { key: 'filech2_2',         label: 'filech2_2',          hint: 'ch2 slot 3', required: false },
-
-  { key: 'filech3_0',         label: 'filech3_0',          hint: 'ch3 slot 1',       required: false  },
-  { key: 'filech3_1',         label: 'filech3_1',          hint: 'ch3 slot 2',     required: false },
-  { key: 'filech3_2',         label: 'filech3_2',          hint: 'ch3 slot 3', required: false },
-
-  { key: 'filech4_0',         label: 'filech4_0',          hint: 'ch4 slot 1',       required: false  },
-  { key: 'filech4_1',         label: 'filech4_1',          hint: 'ch4 slot 2',     required: false },
-  { key: 'filech4_2',         label: 'filech4_2',          hint: 'ch4 slot 3', required: false },
-
-  { key: 'config_0.ini',      label: 'config_0.ini',       hint: 'ch1 config', required: false},
-  { key: 'config_1.ini',      label: 'config_1.ini',       hint: 'ch2 config', required: false},
-  { key: 'config_2.ini',      label: 'config_2.ini',       hint: 'ch3 config', required: false},
-  { key: 'config_3.ini',      label: 'config_3.ini',       hint: 'ch4 config', required: false},
-
-  { key: 'true_config.ini',      label: 'true_config.ini',       hint: 'the TRUE config', required: false},
-];
-
-const EMPTY_KEYS = ['keyconfig_0.ini', 'keyconfig_3.ini', 'trophies.ini'];
-
+// key → ArrayBuffer
 let fileData = {};
 
-function renderSlots() {
-  const container = document.getElementById('slots-container');
-  container.innerHTML = '';
+/* ── Helpers ── */
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + 'b';
+  return (bytes / 1024).toFixed(1) + 'kb';
+}
 
-  UT_FILES.forEach(f => {
-    const isLoaded  = !!fileData[f.key];
-    const isMissing = f.required && !isLoaded;
+/* ── Render ── */
+function render() {
+  const list    = document.getElementById('file-list');
+  const notice  = document.getElementById('empty-notice');
+  const countRow = document.getElementById('file-count-row');
+  const countNum = document.getElementById('count-num');
+  const exportBtn = document.getElementById('export-btn');
 
-    const slot = document.createElement('label');
-    slot.className = 'slot' + (isLoaded ? ' loaded' : isMissing ? ' required-missing' : '');
-    slot.htmlFor = 'input-' + f.key;
+  const keys = Object.keys(fileData);
+  list.innerHTML = '';
 
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.id   = 'input-' + f.key;
-    input.addEventListener('change', e => handleFile(e, f.key));
+  if (keys.length === 0) {
+    notice.style.display = '';
+    countRow.style.display = 'none';
+    exportBtn.disabled = true;
+    return;
+  }
 
-    const left = document.createElement('div');
-    left.innerHTML = `
-      <div class="slot-label">${f.label}${f.required ? '<span class="asterisk">*</span>' : ''}</div>
-      <div class="slot-hint">${f.hint}${!f.required ? ' · optional' : ''}</div>
+  notice.style.display = 'none';
+  countRow.style.display = 'flex';
+  countNum.textContent = keys.length;
+  exportBtn.disabled = false;
+
+  keys.forEach(key => {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+
+    const info = document.createElement('div');
+    info.className = 'file-info';
+    info.innerHTML = `
+      <div class="file-name">${escHtml(key)}</div>
+      <div class="file-size">${formatSize(fileData[key].byteLength)}</div>
     `;
 
-    const status = document.createElement('div');
-    status.className = 'slot-status';
-    status.textContent = isLoaded
-      ? `✓ ${(fileData[f.key].byteLength / 1024).toFixed(1)}kb`
-      : f.required ? '[ required ]' : '[ optional ]';
+    const check = document.createElement('div');
+    check.className = 'file-checkmark';
+    check.textContent = '✓';
 
-    slot.appendChild(input);
-    slot.appendChild(left);
-    slot.appendChild(status);
-    container.appendChild(slot);
+    const del = document.createElement('button');
+    del.className = 'delete-btn';
+    del.title = 'Remove ' + key;
+    del.textContent = '✕';
+    del.onclick = () => { delete fileData[key]; render(); };
+
+    item.appendChild(info);
+    item.appendChild(check);
+    item.appendChild(del);
+    list.appendChild(item);
   });
 }
 
-function handleFile(e, key) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => { fileData[key] = reader.result; renderSlots(); };
-  reader.readAsArrayBuffer(file);
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+/* ── File input / drag & drop ── */
+const fileInput = document.getElementById('file-input');
+const dropZone  = document.getElementById('drop-zone');
+
+fileInput.addEventListener('change', e => {
+  loadFiles(e.target.files);
+  fileInput.value = ''; // reset so same file can be re-added after removal
+});
+
+dropZone.addEventListener('dragenter', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', e => { dropZone.classList.remove('drag-over'); });
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  loadFiles(e.dataTransfer.files);
+});
+
+function loadFiles(fileList) {
+  Array.from(fileList).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      fileData[file.name] = reader.result;
+      render();
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function clearAll() {
+  fileData = {};
+  render();
+}
+
+/* ── Export ── */
 function toBase64(buffer) {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -443,20 +595,13 @@ function makeRecord(key, b64) {
 }
 
 function exportIDB() {
-  const missing = UT_FILES.filter(f => f.required && !fileData[f.key]);
-  if (missing.length > 0) {
-    alert('Missing required files:\n' + missing.map(f => f.label).join('\n'));
-    renderSlots();
-    return;
-  }
-
   const nameInput = document.getElementById('filename-input').value.trim();
   if (!nameInput) { alert('Please enter a filename.'); return; }
 
-  const records = [
-    ...UT_FILES.map(f => [f.key, fileData[f.key] ? toBase64(fileData[f.key]) : '']),
-    ...EMPTY_KEYS.map(k => [k, '']),
-  ];
+  const keys = Object.keys(fileData);
+  if (keys.length === 0) { alert('No files loaded.'); return; }
+
+  const records = keys.map(k => [k, toBase64(fileData[k])]);
 
   const lines = [
     makeHeader(records.length),
@@ -470,7 +615,7 @@ function exportIDB() {
   URL.revokeObjectURL(url);
 }
 
-renderSlots();
+render();
 </script>
 </body>
 </html>
